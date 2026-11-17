@@ -1,0 +1,110 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  6
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      thermo.compressibleGas;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+A
+{
+    specie
+    {
+        molWeight   25.9;
+    }
+    equationOfState
+    {
+        rho         1.0;
+    }
+    thermodynamics
+    {   Hf          0;
+        Cp          1000;       // 固定值 [J/(kg·K)]
+    }
+
+    transport
+    {   
+        kappa       1;  // 导热系数 [W/(m·K)]
+        mu          1e-4;  // 动力粘度（示例值）
+        Pr          0.1;    // 普朗特数
+    }
+}
+
+B
+{
+    specie
+    {
+        molWeight   25.9;
+    }
+    equationOfState
+    {
+        rho         1.0;
+    }
+    thermodynamics
+    {   Hf          0;
+        Cp          1000;       // 固定值 [J/(kg·K)]
+    }
+
+    transport
+    {   
+        kappa       1;  // 导热系数 [W/(m·K)]
+        mu          1e-4;  // 动力粘度（示例值）
+        Pr          0.1;    // 普朗特数
+    }
+}
+
+C
+{
+    specie
+    {
+        molWeight   25.9;
+    }
+    equationOfState
+    {
+        rho         1.0;
+    }
+    thermodynamics
+    {   Hf          0;
+        Cp          1000;       // 固定值 [J/(kg·K)]
+    }
+
+    transport
+    {   
+        kappa       1;  // 导热系数 [W/(m·K)]
+        mu          1e-4;  // 动力粘度（示例值）
+        Pr          0.1;    // 普朗特数
+    }
+}
+
+D
+{
+    specie
+    {
+        molWeight   25.9;
+    }
+    equationOfState
+    {
+        rho         1.0;
+    }
+    thermodynamics
+    {   Hf          0;
+        Cp          1000;       // 固定值 [J/(kg·K)]
+    }
+
+    transport
+    {   
+        kappa       1;  // 导热系数 [W/(m·K)]
+        mu          1e-4;  // 动力粘度（示例值）
+        Pr          0.1;    // 普朗特数
+    }
+}
+
+// ************************************************************************* //

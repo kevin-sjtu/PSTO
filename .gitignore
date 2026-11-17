@@ -1,0 +1,67 @@
+# Local environments and Python caches
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.DS_Store
+
+# Local datasets, checkpoints, diagnostics and logs
+*.mat
+*.h5
+*.hdf5
+*.npy
+*.npz
+*.pt
+*.pth
+*.ckpt
+*.csv
+*.log
+*.out
+*.err
+log
+log.*
+slurm-*
+**/checkpoints/
+**/logs/
+**/data/cache/
+**/data_cache/
+**/analysis/figures/
+**/analysis/results*/
+**/analysis/performance/results/
+**/analysis/performance/*.json
+**/data/*_sampling.json
+**/outputs/
+**/runs/
+**/work/
+
+# Generated OpenFOAM mesh, decompositions and runtime compilation
+**/polyMesh/
+**/processor*/
+**/dynamicCode/
+**/postProcessing/
+**/Make/linux*/
+*.o
+*.so
+*.dep
+*.foam
+
+# OpenFOAM time output; retain the case's initial fields in 0/
+cases/*/data/openfoam/*/[0-9]*/
+!cases/*/data/openfoam/*/0/
+!cases/*/data/openfoam/*/0/**
+cases/tripleflame/data/reaction/1d-freeflame/[0-9]*/
+!cases/tripleflame/data/reaction/1d-freeflame/0/
+!cases/tripleflame/data/reaction/1d-freeflame/0/**
+**/0/0/
+
+# Machine-local configuration and credentials
+.env
+.env.*
+.aws/
+.codex/
+.agents/
+*.pem
+*.key
+

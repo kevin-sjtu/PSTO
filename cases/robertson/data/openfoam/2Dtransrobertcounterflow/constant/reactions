@@ -1,0 +1,39 @@
+
+species
+(
+    A
+    B
+    C
+    D
+);
+
+reactions
+{
+    Reaction0
+    {
+        type     irreversibleArrheniusReaction;
+        reaction "A = B";
+        A          4;   // 指前因子（单位需匹配反应级数）
+        beta       0;      // 温度指数（设为0消除温度影响）
+        Ta         0;      // 活化能（设为0消除温度影响）
+    }
+
+    Reaction1
+    {
+        type     irreversibleArrheniusReaction;
+        reaction "B + B = C + B";     
+
+        A       3.0e7;   // 指前因子（单位需匹配反应级数）
+        beta        0;      // 温度指数（设为0消除温度影响）
+        Ta          0;      // 活化能（设为0消除温度影响）
+    }
+
+    Reaction2
+    {
+        type     irreversibleArrheniusReaction;
+        reaction "B + C = A + C";
+        A       1.0e4;   // 指前因子（单位需匹配反应级数）
+        beta        0;      // 温度指数（设为0消除温度影响）
+        Ta          0;      // 活化能（设为0消除温度影响）
+    }
+}

@@ -7,7 +7,7 @@ __pycache__/
 .ruff_cache/
 .DS_Store
 
-# Local datasets, checkpoints, diagnostics and logs
+# Local datasets, training checkpoints, diagnostics and logs
 *.mat
 *.h5
 *.hdf5
@@ -23,7 +23,7 @@ __pycache__/
 log
 log.*
 slurm-*
-**/checkpoints/
+**/checkpoints/**
 **/logs/
 **/data/cache/
 **/data_cache/
@@ -35,6 +35,27 @@ slurm-*
 **/outputs/
 **/runs/
 **/work/
+
+# Bundled checkpoints and their portable inference configuration
+!cases/*/checkpoints/models/
+!cases/*/checkpoints/models/model_PSTO/
+!cases/*/checkpoints/models/model_FNO/
+!cases/*/checkpoints/models/model_Unet/
+!cases/*/checkpoints/models/model_UFNO/
+!cases/*/checkpoints/models/model_*/checkpoint_best.pt
+!cases/tripleflame/checkpoints/models/model_DNN/
+!cases/tripleflame/checkpoints/models/model_DNN/dnn_model_Y.pt
+!cases/tripleflame/checkpoints/models/model_coeff/
+!cases/tripleflame/checkpoints/models/model_coeff/constitutive_DNN_BCT.pt
+!cases/tripleflame/checkpoints/models_1e-5/
+!cases/tripleflame/checkpoints/models_1e-5/model_PSTO/
+!cases/tripleflame/checkpoints/models_1e-5/model_FNO/
+!cases/tripleflame/checkpoints/models_1e-5/model_Unet/
+!cases/tripleflame/checkpoints/models_1e-5/model_UFNO/
+!cases/tripleflame/checkpoints/models_1e-5/model_*/checkpoint_best.pt
+!cases/tripleflame/checkpoints/models_1e-5/model_DNN/
+!cases/tripleflame/checkpoints/models_1e-5/model_DNN/dnn_model_Y.pt
+!cases/tripleflame/checkpoints/inference_config.json
 
 # Generated OpenFOAM mesh, decompositions and runtime compilation
 **/polyMesh/

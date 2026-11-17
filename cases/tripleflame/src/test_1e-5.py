@@ -1,7 +1,7 @@
 """Ten-microsecond Lie rollout with a matching Y-only reaction checkpoint.
 
-The original test.py is unchanged. Targets are sampled every ten original
-frames. As in test.py, each sample's normalization/clipping bounds include its
+Published checkpoints use verified inference metadata; independent local runs
+retain their training-completion checks. Targets use every ten original frames. As in test.py, each sample's normalization/clipping bounds include its
 initial frame and every original reference frame in the same physical window.
 """
 import argparse
@@ -21,6 +21,8 @@ from src.DNN import NN_MLP
 from src.model import source_Y, transport, build_backbone
 from utils.functions import STATE_SPECIES, channel_bounds, load_transport_state_dict
 from paired_data import CHANNELS
+from inference_bundle import (find_entry, validate_physics, validate_constitutive,
+                              channel_bounds as bundle_channel_bounds, require_close)
 
 
 def frame_indices(start_1based, steps, dt, reference_dt, total):
@@ -51,7 +53,7 @@ def load_reference_window(data, indices):
     return block[0], block[1:], lower, upper
 
 
-def load_source(path, dt, pressure, mechanism, device):
+def _load_training_source(path, dt, pressure, mechanism, device):
     saved = _safe_torch_load(str(path), device)
     if not np.isclose(saved.get('dt', np.nan), dt, rtol=1e-6, atol=0):
         raise ValueError('Reaction checkpoint dt does not match rollout dt')
@@ -77,7 +79,7 @@ def load_source(path, dt, pressure, mechanism, device):
     return source.requires_grad_(False).eval().to(device)
 
 
-def load_transport(directory, name, args, device):
+def _load_training_transport(directory, name, args, device):
     """Load trained weights and stats; evaluate applies the original test bounds."""
     config = json.loads((directory/'run_config.json').read_text())
     completion_path = directory/'reload_verification.json'
@@ -120,6 +122,78 @@ def load_transport(directory, name, args, device):
                   training_bounds=str(Path(config['frame_cache']).with_name('metadata.json')))
     return model, report
 
+
+
+def load_source(path, dt, pressure, mechanism, device):
+    """Load either a hashed published source model or a verified local run."""
+    bundle = find_entry(path, 'reaction')
+    if bundle is None:
+        return _load_training_source(path, dt, pressure, mechanism, device)
+    validate_physics(bundle, dt, pressure, mechanism, CHANNEL_NAMES, CHANNELS)
+    entry = bundle.entry
+    if (entry.get('species') != list(STATE_SPECIES)
+            or entry.get('temperature_model') is not False
+            or entry.get('temperature_recovery') != 'constant_enthalpy_YtoT'):
+        raise ValueError('Inference bundle reaction convention mismatch')
+    require_close(entry['pressure'], pressure, 'reaction pressure')
+    saved = _safe_torch_load(str(path), device)
+    require_close(saved.get('dt', np.nan), dt, 'reaction checkpoint interval')
+    meta = saved['run_metadata']
+    if (meta.get('species') != entry['species'] or meta.get('temperature_model') is not False
+            or saved['layers'] != entry['layers']):
+        raise ValueError('Reaction checkpoint and inference bundle metadata differ')
+    require_close(meta['pressure'], pressure, 'checkpoint reaction pressure')
+    models = [NN_MLP(saved['layers']) for _ in range(8)]
+    for i, model in enumerate(models):
+        model.load_state_dict(saved[f'net{i}'], strict=True)
+    source = source_Y(models, p=pressure, mech_file=mechanism)
+    source.load_stats({key: torch.as_tensor(saved[key], dtype=torch.float32).view(1, -1, 1, 1)
+                       for key in ('data_in_mean', 'data_in_std', 'data_target_mean', 'data_target_std')})
+    return source.requires_grad_(False).eval().to(device)
+
+
+def load_transport(directory, name, args, device):
+    """Published bundles need weights/configuration, not training logs or caches."""
+    path = Path(directory) / 'checkpoint_best.pt'
+    bundle = find_entry(path, 'transport')
+    if bundle is None:
+        return _load_training_transport(directory, name, args, device)
+    entry = bundle.entry
+    if entry.get('model_type') != name:
+        raise ValueError('Transport model name and inference bundle differ')
+    dx = getattr(args, 'dx', 1e-4)
+    validate_physics(bundle, args.dt, args.pressure, args.mechanism,
+                     CHANNEL_NAMES, CHANNELS, dx=dx)
+    validate_constitutive(bundle, args.coefficient_checkpoint)
+    saved = _safe_torch_load(str(path), device)
+    for value in (saved.get('dt', np.nan), saved['model']['time_step'].item()):
+        require_close(value, args.dt, 'transport checkpoint interval')
+    if 'grid_step' in saved['model']:
+        require_close(saved['model']['grid_step'].item(), dx, 'checkpoint grid spacing')
+    if saved.get('step') != entry['checkpoint_step']:
+        raise ValueError('Checkpoint step and inference bundle differ')
+    lower, upper = bundle_channel_bounds(bundle, len(CHANNELS))
+    lower = torch.from_numpy(lower).to(device)
+    upper = torch.from_numpy(upper).to(device)
+    architecture = entry['architecture']
+    required = ('hidden_channels', 'latent_per_var', 'n_layers', 'modes')
+    if any(not isinstance(architecture.get(key), int) or architecture[key] <= 0 for key in required):
+        raise ValueError('Inference bundle has invalid model architecture')
+    options = {key: architecture[key] for key in required}
+    options.update(dt=args.dt, dx=dx, pressure=args.pressure, mechanism=args.mechanism,
+                   coefficient_backend='dnn', coefficient_checkpoint=args.coefficient_checkpoint)
+    backbone = build_backbone(name, len(CHANNELS), SimpleNamespace(**options),
+                              data_min=lower, data_max=upper)
+    if name == 'PSTO':
+        load_transport_state_dict(backbone, saved['model'], strict=True)
+    else:
+        backbone.load_state_dict(saved['model'], strict=True)
+    model = transport(backbone).requires_grad_(False).eval().to(device)
+    model.load_stats({'data_min': lower, 'data_max': upper})
+    report = dict(path=str(path), checkpoint_step=int(saved['step']),
+                  sha256=entry['sha256'], inference_bundle=str(bundle.manifest_path),
+                  training_bounds=f'{bundle.manifest_path}#transport/{bundle.key}/normalization')
+    return model, report
 
 def assess_input_range(initial, lower, upper):
     """Expose an inference distribution mismatch without changing trained weights."""

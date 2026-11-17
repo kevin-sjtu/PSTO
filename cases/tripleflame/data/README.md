@@ -1,47 +1,62 @@
-# Data preparation
+# Flame data preparation
 
-This directory contains source programs, OpenFOAM dictionaries, mechanism definitions and the explicitly retained initial `0/` fields. It does not contain generated datasets, nonzero-time fields, decomposed cases, generated meshes, logs or model weights.
+This directory provides OpenFOAM configurations, mechanism definitions,
+initial `0/` fields and reaction utilities. Datasets, later-time CFD fields,
+meshes, decomposed cases and logs must be generated locally.
 
-## Two-dimensional OpenFOAM cases
+## Two-dimensional cases
 
-`openfoam/H2/` contains the reacting case (`chemistry on`); `openfoam/H2_flow/` contains its reaction-free counterpart (`chemistry off`). Both retain their original mesh dictionary, discretization, physical properties and initial fields. The `application` label is set to `reactingFoam`, matching the actual supplied run scripts and benchmark. Alternative CanteraTorch configuration is not included.
+`openfoam/H2/` is reacting (`chemistry on`); `openfoam/H2_flow/` is reaction-free
+(`chemistry off`). Both retain the original mesh, physical and discretization
+settings. They require a Cantera-enabled OpenFOAM build providing
+`canteraPsiThermo` and `canteraChemistryReader`; the full extension/build dependency
+closure has not yet been verified or bundled.
 
-The cases require the compatible OpenFOAM build with `canteraPsiThermo` and `canteraChemistryReader`, plus its Cantera dependencies. This is not a stock-OpenFOAM-only setup. The full extension/build dependency closure has not yet been verified or bundled. Activate the appropriate environment yourself before using:
+After loading a compatible solver environment, run from `cases/tripleflame`:
 
 ```bash
-bash data/openfoam/H2/run.sh --help
-bash data/openfoam/H2_flow/run.sh --help
-# After the solver build is available:
 bash data/openfoam/H2/run.sh
 bash data/openfoam/H2_flow/run.sh
 ```
 
-The wrappers generate the mesh using `blockMesh` if absent, then run the case serially by default. For MPI, set `NPROCS` and ensure `system/decomposeParDict` has the same number of subdomains; the wrapper validates the match. `MPIEXEC` can select another MPI launcher. Existing initial fields are retained, so the `funkySet*Dict` utilities are not run automatically; recreating alternative initial states requires the compatible funky tools and a confirmed initialization sequence.
-
-Generated `constant/polyMesh`, `processor*`, nonzero-time directories and solver output are local artifacts. The H2/H2_flow files alone do not supply the missing two-dimensional CFD-to-HDF5 exporter.
+The wrappers use `reactingFoam`, build the mesh if absent and run serially by
+default. For MPI, `NPROCS` must match `system/decomposeParDict`; `MPIEXEC` selects
+the launcher. Existing initial fields are retained. The `funkySet*Dict` utilities
+are not automatically applied; different initial states require a confirmed
+initialization sequence and compatible tools.
 
 ## Reaction utilities
 
-`reaction/1d-freeflame/` retains source utilities and an auxiliary one-dimensional reference configuration. Its original `dfLowMachFoam` application entry is preserved because the actual solver used for that auxiliary case has not been confirmed. It is **not an independently validated data-generation workflow** and is not called by the main automatic OpenFOAM run wrappers. The nested `0/0` backup and all multi-condition/time-result archives are excluded.
+`reaction/1d-freeflame/` contains auxiliary source utilities and a one-dimensional
+reference case. Its original `dfLowMachFoam` entry is retained, but the actual
+auxiliary solver workflow remains unverified and is not run by the main wrappers.
 
-| Program | What it does and required inputs |
+| Program | Input and purpose |
 |---|---|
-| `equilibrium_change_replace.py` | Patches a selected local initial-state directory with the original premixed/equilibrium construction. Use `--dry-run` to inspect the intended operation. |
-| `0D_data_extraction.py` | Extracts existing local one-dimensional CFD fields into a three-dimensional `(samples, variables, points)` array. `--base-dir`, `--folders` and `--output` select local paths. |
-| `compute_formation_enthalpies.py` | Computes formation-enthalpy coefficients from the supplied YAML mechanism. |
-| `mp-1d-random-sampling.py` | Applies the original CFD-state perturbation and reaction filtering procedure; requires `--hf`, `--formation-enthalpies` and `--output`. Its reaction interval remains `1e-5 s`. |
-| `single_step.py` | Integrates an existing two-dimensional temperature/species matrix; requires `--input` and `--output`. Its original interval remains `5e-7 s`. |
+| `equilibrium_change_replace.py` | Construct premixed/equilibrium initial fields in a selected local directory; inspect with `--dry-run`. |
+| `0D_data_extraction.py` | Extract existing 1D CFD fields into `(samples, variables, points)` arrays. |
+| `compute_formation_enthalpies.py` | Obtain formation-enthalpy coefficients from the YAML mechanism. |
+| `mp-1d-random-sampling.py` | Perturb CFD states and apply reaction filtering; requires source data and enthalpies, using `dt=1e-5 s`. |
+| `single_step.py` | Integrate a supplied 2D temperature/species matrix using `dt=5e-7 s`. |
 
-The single-step utility's input layout differs from the extraction program's output; they must not be presented as a ready-to-run pipeline. No conversion or timestep change is invented here. Likewise, the exact relationship between these utilities' outputs and the current fine/coarse reaction-training files has not been verified. The original sampling seeds are not available. Path and output arguments were made explicit; worker upper-bound checks and exception propagation were repaired without changing valid samples' chemistry or selection formulas.
+Use each program's `--help` for explicit input/output paths. The extraction and
+single-step utilities expect different layouts and are not a complete pipeline.
+Original sampling seeds and the exact assembly of the final training files
+have not been recovered; the Linux multiprocessing sampling scripts have not
+been validated through a full generation run.
 
-Use `--help` on these programs before preparing inputs. The sampling utilities remain Linux multiprocessing scripts and have not been executed as part of repository preparation. Do not infer full reproducibility from their presence.
+## Required links for full regeneration
 
-## Missing links before full reproduction
+1. A validated 2D CFD-to-HDF5 exporter, including spatial/channel ordering, for
+   `H2_tripleflow.h5` and `H2_tripleflame.h5`.
+2. The coarse-pair construction and temporal-split procedure for
+   `H2_tripleflow_dt1e-5_pairs.h5`; `src/paired_data.py` only loads and caches it.
+3. Final assembly and provenance of `0d_data.npy` and `0d_data_1e-5.npy`.
+4. Generation of the constitutive source matrix, such as `0d_dataset_cfd.npy`;
+   the constitutive trainer builds labels from an existing source.
+5. Production of the additional transport-only and exact Lie-reaction reference
+   trajectories required by the operator diagnostics.
 
-1. The two-dimensional OpenFOAM-field-to-HDF5 export and spatial/channel ordering procedure for `H2_tripleflow.h5` and `H2_tripleflame.h5` must be supplied and validated.
-2. The generator for `H2_tripleflow_dt1e-5_pairs.h5`, including its temporal split and metadata, is not yet present. `src/paired_data.py` only validates/loads paired files and builds a local cache.
-3. The final assembly and provenance of `0d_data.npy` and `0d_data_1e-5.npy` must be confirmed. Existing reaction utilities cannot yet be claimed to generate those exact inputs.
-4. Constitutive training expects a source matrix such as `0d_dataset_cfd.npy`; its complete generation path remains unverified. `src/train_constitutive.py` builds labels from a supplied source, not from an invented substitute.
-5. Operator diagnostics require additional transport-only and exact Lie-reaction reference trajectories. Their production procedures are not yet supplied as complete verified commands.
-
-All listed datasets and intermediate outputs are generated locally and excluded from publication. Mechanism source comments are preserved; third-party attribution and redistribution terms still require repository-level confirmation.
+These missing steps remain necessary even though pretrained models are supplied.
+Mechanism attribution and retained third-party terms are recorded in the
+[repository notices](../../../THIRD_PARTY_NOTICES.md).

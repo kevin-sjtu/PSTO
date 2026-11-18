@@ -17,7 +17,7 @@ PSTO learns transport from reaction-free data and couples it with a reaction sol
 Each case contains model code, training, evaluation and plotting scripts, pretrained checkpoints, reference figures, and data-preparation instructions. See also the [training curves](docs/figures/training_curves.png).
 
 ```text
-cases/{cdr,robertson,tripleflame}/
+cases/{CDR,Robertson,Tripleflame}/
   src/ utils/          # Models, training and evaluation
   scripts/ analysis/   # Run scripts and analysis
   data/                # Generators, OpenFOAM cases and data instructions
@@ -26,7 +26,7 @@ cases/{cdr,robertson,tripleflame}/
 docs/figures/          # Architecture and training curves
 ```
 
-Datasets, training/test logs, generated meshes and CFD time outputs are excluded. OpenFOAM initial fields in `0/` are included.
+Python-based numerical solver for `CDR`, OpenFOAM solver & dicts for `Robertson`, `Tripleflame` are included.
 
 ## Installation
 

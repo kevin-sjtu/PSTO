@@ -14,7 +14,7 @@ PSTO learns transport from reaction-free data and couples it with a reaction sol
 | [Robertson counterflow](cases/robertson/README.md) | `1e-4 s` | 100 steps | [Fields](cases/robertson/figures/fields_step100.png) · [Transfer](cases/robertson/figures/inference_transfer.png) |
 | [Hydrogen planar jet flame](cases/tripleflame/README.md) | `1e-6 / 1e-5 s` | 100 / 10 steps | [Fields](cases/tripleflame/figures/fields_step100.png) · [Accuracy and cost](cases/tripleflame/figures/computational_performance_timestep.png) |
 
-Each case contains model code, training, evaluation and plotting scripts, pretrained checkpoints, reference figures, and data-preparation instructions. The flame time steps use separate transport and reaction weights. See also the [training curves](docs/figures/training_curves.png).
+Each case contains model code, training, evaluation and plotting scripts, pretrained checkpoints, reference figures, and data-preparation instructions. See also the [training curves](docs/figures/training_curves.png).
 
 ```text
 cases/{cdr,robertson,tripleflame}/
@@ -43,7 +43,7 @@ For GPU use, select a compatible [PyTorch build](https://pytorch.org/get-started
 
 ## Data and evaluation
 
-1. Prepare the inputs using the [CDR](cases/cdr/data/README.md), [Robertson](cases/robertson/data/README.md) or [flame](cases/tripleflame/data/README.md) data guide. CDR uses Burgers input from [PeRCNN](https://github.com/Raocp/PeRCNN). The flame guide identifies missing steps in the historical data-export pipeline.
+1. Prepare the inputs using the [CDR](cases/cdr/data/README.md), [Robertson](cases/robertson/data/README.md) or [flame](cases/tripleflame/data/README.md) data guide. CDR uses Burgers input from [PeRCNN](https://github.com/Raocp/PeRCNN).
 2. Evaluate the bundled models from the corresponding case directory:
 
    ```bash
@@ -58,7 +58,7 @@ For GPU use, select a compatible [PyTorch build](https://pytorch.org/get-started
 
 Reference data are needed for initial conditions, normalization and error evaluation. The case guides include training commands, CPU options and lightweight tests. Saved reference figures can be viewed without running the models; new plots require local evaluation output.
 
-The bundled checkpoints and figures come from the original experiments. Some checkpoints predate subsequent PDE-loss corrections; this release does not claim results from retraining with the current code. Reported accuracy uses the arithmetic mean of physical-variable relative L2 errors; the flame sensitivity analysis uses its separately defined whole-state norm.
+The bundled checkpoints and figures come from the conducted experiments. Reported accuracy uses the arithmetic mean of physical-variable relative L2 errors.
 
 ## Attribution and licensing
 

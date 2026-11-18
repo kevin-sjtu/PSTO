@@ -56,7 +56,7 @@ For GPU use, select a compatible [PyTorch build](https://pytorch.org/get-started
    bash scripts/plot.sh --dt 1e-6
    ```
 
-Reference data are needed for initial conditions, normalization and error evaluation. The case guides include training commands, CPU options and lightweight tests. Saved reference figures can be viewed without running the models; new plots require local evaluation output.
+Reference data are needed for initial conditions, normalization and error evaluation. The case guides include training commands, CPU options and lightweight tests. Saved reference figures can be viewed without running the models.
 
 The bundled checkpoints and figures come from the conducted experiments. Reported accuracy uses the arithmetic mean of physical-variable relative L2 errors.
 

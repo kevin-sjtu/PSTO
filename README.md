@@ -10,9 +10,9 @@ PSTO learns transport from reaction-free data and couples it with a reaction sol
 
 | Case and instructions | Time step | Coupled rollout | Reference result |
 |---|---|---|---|
-| [Canonical CDR](cases/cdr/README.md) | `2.5e-4 s` | 100 steps | [Fields](cases/cdr/figures/fields_step100.png) · [PDE residual](cases/cdr/figures/pde_residual_analysis.png) |
-| [Robertson counterflow](cases/robertson/README.md) | `1e-4 s` | 100 steps | [Fields](cases/robertson/figures/fields_step100.png) · [Transfer](cases/robertson/figures/inference_transfer.png) |
-| [Hydrogen planar jet flame](cases/tripleflame/README.md) | `1e-6 / 1e-5 s` | 100 / 10 steps | [Fields](cases/tripleflame/figures/fields_step100.png) · [Accuracy and cost](cases/tripleflame/figures/computational_performance_timestep.png) |
+| [Canonical CDR](cases/cdr/README.md) | `2.5e-4 s` | 100 steps | [Fields](cases/cdr/figures/2d_CDR.png) · [PDE residual](cases/cdr/figures/pde_residual_analysis.png) |
+| [Robertson counterflow](cases/robertson/README.md) | `1e-4 s` | 100 steps | [Fields](cases/robertson/figures/2d_Robertson.png) · [Transfer](cases/robertson/figures/inference_transfer.png) |
+| [Hydrogen planar jet flame](cases/tripleflame/README.md) | `1e-6 / 1e-5 s` | 100 / 10 steps | [Fields](cases/tripleflame/figures/2d_Tripleflame.png) · [Accuracy and cost](cases/tripleflame/figures/computational_performance_timestep.png) |
 
 Each case contains model code, training, evaluation and plotting scripts, pretrained checkpoints, reference figures, and data-preparation instructions. See also the [training curves](docs/figures/training_curves.png).
 

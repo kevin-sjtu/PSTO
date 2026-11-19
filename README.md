@@ -1,6 +1,6 @@
 # PDE-Structured Transport Operator (PSTO)
 
-Code for **PSTO: PDE-structured transfer learning for Multiscale convection–diffusion–reaction systems with shared implicit updates**, by Kaiwen Li, Dezhi Zhou and Xingcai Lu.
+Code for **PSTO: PDE-structured transfer learning for Multiscale convection–diffusion–reaction systems with shared implicit updates**, by Kaiwen Li, Dezhi Zhou, Kun Wu and Xingcai Lu.
 
 PSTO learns transport from reaction-free data and couples it with a reaction solver or neural surrogate. A transport block shared across physical variables is reused in relaxed fixed-point iterations. Comparisons include FNO, U-Net and U-FNO.
 
